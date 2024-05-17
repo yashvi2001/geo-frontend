@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Map, { Source, Layer, Marker, Popup } from "react-map-gl";
 import axios from "axios";
-
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -85,11 +84,29 @@ export default function Home() {
     //   };
     // }
   };
+  const layerStyle = {
+    id: "point",
+    type: "circle",
+    paint: {
+      "circle-radius": 10,
+      "circle-color": "#007cbf",
+    },
+  };
+  const data = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [-122.4, 37.8] },
+      },
+    ],
+  };
   useEffect(() => {
     try {
       const fetchData = async () => {
         const response = await axios.get("http://localhost:8000/data");
         console.log(response.data, "response");
+        setgeojson(response.data);
       };
 
       fetchData();
@@ -113,15 +130,6 @@ export default function Home() {
   //     {type: 'Feature', geometry: {type: 'Point', coordinates: [-122.4, 37.8]}}
   //   ]
   // };
-
-  const layerStyle = {
-    id: "point",
-    type: "circle",
-    paint: {
-      "circle-radius": 10,
-      "circle-color": "#007cbf",
-    },
-  };
 
   //get the user data from local storage and check if the user is logged in
   useEffect(() => {
@@ -211,21 +219,73 @@ export default function Home() {
       )}
 
       {showData && (
-        <div className="flex  md:flex-row justify-center mt-10">
-          <div className="flex flex-col justify-center items-center   lg:pr-14">
-            <label
-              htmlFor="file-upload"
-              className="border rounded-md p-4 text-center text-2xl cursor-pointer"
-            >
-              <i className="fas fa-upload fa-lg lg:mr-2"></i>Upload File to
-              Render
-              <input
-                id="file-upload"
-                type="file"
-                style={{ display: "none" }}
-                onChange={handleFileUpload}
-              />
-            </label>
+        <div>
+          <div className="flex  md:flex-row justify-center mt-10">
+            <div className="flex flex-col justify-center items-center   lg:pr-14">
+              <label
+                htmlFor="file-upload"
+                className="border rounded-md p-4 text-center text-2xl cursor-pointer"
+              >
+                <i className="fas fa-upload fa-lg lg:mr-2"></i>Upload File to
+                Render
+                <input
+                  id="file-upload"
+                  type="file"
+                  style={{ display: "none" }}
+                  onChange={handleFileUpload}
+                />
+              </label>
+            </div>
+          </div>
+          <div className="flex flex-col justify-center items-center pt-32">
+            An Example of a map and data that is uploaded
+          </div>
+          <div className="flex justify-center mt-3">
+            <div className="flex flex-col justify-center items-center"></div>
+            <div style={{ height: "50vh", width: "50vw" }}>
+              <Map
+                mapboxAccessToken={MAPBOX_TOKEN}
+                style={{ width: "100%", height: "100%" }}
+                mapStyle="mapbox://styles/mapbox/streets-v9"
+              >
+                <Source id="my-data" type="geojson" data={data}>
+                  <Layer {...layerStyle} />
+                </Source>
+              </Map>
+            </div>
+          </div>
+          <div className="flex justify-center mt-10">
+            <div className="flex flex-col justify-center items-center">
+              All the data will be displayed here that is uploaded
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-center">
+            {geojson?.map((data1, index) => {
+              // console.log(data, "data");
+              return (
+                <div
+                  key={index}
+                  className="flex flex-row justify-center mt-6 ml-5 items-center flex-wrap"
+                >
+                  <div className="flex flex-col justify-center items-center border rounded-md p-4">
+                    <div style={{ height: "20vh", width: "20vw" }}>
+                      <Map
+                        mapboxAccessToken={MAPBOX_TOKEN}
+                        style={{ width: "100%", height: "100%" }}
+                        mapStyle="mapbox://styles/mapbox/streets-v9"
+                      >
+                        <Source id="my-data" type="geojson" data={data1.data}>
+                          <Layer {...layerStyle} />
+                        </Source>
+                      </Map>
+                    </div>
+                    <div className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer">
+                      View detailed data
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
