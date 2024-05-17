@@ -237,7 +237,7 @@ export default function Home() {
               </label>
             </div>
           </div>
-          <div className="flex flex-col justify-center items-center pt-32">
+          <div className="flex flex-col justify-center items-center pt-12">
             An Example of a map and data that is uploaded
           </div>
           <div className="flex justify-center mt-3">
