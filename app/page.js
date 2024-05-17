@@ -254,11 +254,11 @@ export default function Home() {
               </Map>
             </div>
           </div>
-          <div className="flex justify-center mt-10">
+      {    <div className="flex justify-center mt-10">
             <div className="flex flex-col justify-center items-center">
-              All the data will be displayed here that is uploaded
+              All the data will be displayed here that is uploaded 
             </div>
-          </div>
+          </div>}
           <div className="flex flex-wrap justify-center">
             {geojson?.map((data1, index) => {
               // console.log(data, "data");
