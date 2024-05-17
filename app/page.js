@@ -25,8 +25,6 @@ export default function Home() {
     formData.append("file", file);
 
     const response = await axios.post("http://localhost:8000/upload", formData);
-    console.log(response);
-
     // if (event.target.files[0].name.includes(".geojson")) {
     //   const newFileReader = new FileReader();
     //   newFileReader.readAsDataURL(event.target.files[0]);
@@ -89,7 +87,6 @@ export default function Home() {
     const fetchData = async () => {
       const response = await axios.get("http://localhost:8000/data");
       console.log(response.data, "response");
-      // setgeojson(response.data);
     };
     fetchData();
   }, []);
@@ -121,21 +118,47 @@ export default function Home() {
   console.log(popup);
   return (
     <main className="min-h-screen p-3">
-      <div className="flex justify-between mb-4">
-        <img
-          src="https://assets-global.website-files.com/660e7952369feece9a6c0e45/661376d0e8d61f1407ad6419_Asset%201.svg"
-          width={150}
-          height={150}
-        />
-        <div className="flex flex-row justify-end">
-          <div className="mr-3 border rounded-md p-2 cursor-pointer">Login</div>
-          <div className="mr-3 border rounded-md p-2 cursor-pointer">
-            Signup
+      <nav>
+        <div className="flex justify-between mb-4">
+          <img
+            src="https://assets-global.website-files.com/660e7952369feece9a6c0e45/661376d0e8d61f1407ad6419_Asset%201.svg"
+            width={150}
+            height={150}
+          />
+          <div className="flex flex-row justify-end">
+            <div className="mr-3 border rounded-md p-2 cursor-pointer">
+              Login
+            </div>
+            <div className="mr-3 border rounded-md p-2 cursor-pointer">
+              Signup
+            </div>
           </div>
         </div>
+      </nav>
+
+      <div className="flex justify-center relative top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[50%]">
+        <div className="flex flex-col justify-center ">
+          <h1 className="text-4xl font-bold">Welcome to Maps</h1>
+          <p className="text-lg">
+            Upload the file to render the map and make it interactive
+          </p>
+          <button className="border rounded-md p-2 mt-6 cursor-pointer">
+            Continue without login
+          </button>
+          <button className="border rounded-md p-2 mt-6 cursor-pointer">
+            Login
+          </button>
+        </div>
+      </div>
+      <div className="flex justify-center pt-32">
+        <img
+          src="https://upload.wikimedia.org/wikipedia/commons/0/0d/WorldMap.svg"
+          width={500}
+          height={500}
+        />
       </div>
 
-      <div className="flex  md:flex-row justify-between mt-10">
+      {/* <div className="flex  md:flex-row justify-between mt-10">
         <div className="md:w-2/3 h-[30rem] p-2">
           <Map
             mapboxAccessToken={MAPBOX_TOKEN}
@@ -186,7 +209,7 @@ export default function Home() {
             />
           </label>
         </div>
-      </div>
+      </div> */}
     </main>
   );
 }
