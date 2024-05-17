@@ -15,6 +15,8 @@ export default function Home() {
   const [newPlace, setNewPlace] = useState(null);
   const [geojson, setgeojson] = useState(null);
   const [markers, setMarkers] = useState([]);
+  const [showData, setShowData] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
   const [popup, setPopup] = useState({ lat: null, lng: null });
   const MAPBOX_TOKEN =
     "pk.eyJ1IjoieWFzaHZpLTEyMyIsImEiOiJjbHc4MjdzNDMxbW1hMnRyem9zNWphbHl6In0.FWrh9nJuTu0oM0e20OnRaQ";
@@ -84,11 +86,16 @@ export default function Home() {
     // }
   };
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await axios.get("http://localhost:8000/data");
-      console.log(response.data, "response");
-    };
-    fetchData();
+    try {
+      const fetchData = async () => {
+        const response = await axios.get("http://localhost:8000/data");
+        console.log(response.data, "response");
+      };
+
+      fetchData();
+    } catch (error) {
+      alert("There was an error fetching the data ! Please try again.");
+    }
   }, []);
   const handleClick = (e) => {
     const data = e.lngLat;
@@ -115,7 +122,23 @@ export default function Home() {
       "circle-color": "#007cbf",
     },
   };
-  console.log(popup);
+
+  //get the user data from local storage and check if the user is logged in
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const userJson = JSON.parse(user);
+      setUserDetails(userJson);
+      setShowData(true);
+    }
+  }, []);
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setShowData(false);
+    setUserDetails(null);
+    window.location.href = "/";
+  };
+
   return (
     <main className="min-h-screen p-3">
       <nav>
@@ -125,91 +148,87 @@ export default function Home() {
             width={150}
             height={150}
           />
-          <div className="flex flex-row justify-end">
-            <div className="mr-3 border rounded-md p-2 cursor-pointer">
-              Login
+          {userDetails?.useremail ? (
+            <div className="flex flex-row justify-end">
+              <div className="mr-3 mt-2 sm:hidden md:block">
+                {userDetails.useremail}
+              </div>
+              <div
+                className="mr-3 border rounded-md p-2 cursor-pointer"
+                onClick={handleLogout}
+              >
+                Logout
+              </div>
             </div>
-            <div className="mr-3 border rounded-md p-2 cursor-pointer">
-              Signup
+          ) : (
+            <div className="flex flex-row justify-end">
+              <div
+                className="mr-3 border rounded-md p-2 cursor-pointer"
+                onClick={() => (window.location.href = "/login")}
+              >
+                Login
+              </div>
+              <div
+                className="mr-3 border rounded-md p-2 cursor-pointer"
+                onClick={() => (window.location.href = "/register")}
+              >
+                Signup
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </nav>
-
-      <div className="flex justify-center relative top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[50%]">
-        <div className="flex flex-col justify-center ">
-          <h1 className="text-4xl font-bold">Welcome to Maps</h1>
-          <p className="text-lg">
-            Upload the file to render the map and make it interactive
-          </p>
-          <button className="border rounded-md p-2 mt-6 cursor-pointer">
-            Continue without login
-          </button>
-          <button className="border rounded-md p-2 mt-6 cursor-pointer">
-            Login
-          </button>
-        </div>
-      </div>
-      <div className="flex justify-center pt-32">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/0/0d/WorldMap.svg"
-          width={500}
-          height={500}
-        />
-      </div>
-
-      {/* <div className="flex  md:flex-row justify-between mt-10">
-        <div className="md:w-2/3 h-[30rem] p-2">
-          <Map
-            mapboxAccessToken={MAPBOX_TOKEN}
-            mapLib={import("mapbox-gl")}
-            // initialViewState={{
-            //   longitude: -122.4,
-            //   latitude: 37.8,
-            //   zoom: 14
-            // }}
-            // onClick={(e) => setMarkers([...markers, e.lngLat])}
-            mapStyle="mapbox://styles/mapbox/streets-v9"
-          >
-            {geojson && (
-              <Source id="my-data" type="geojson" data={geojson}>
-                <Layer {...layerStyle} />
-              </Source>
-            )}
-            {markers?.map((data, index) => {
-              return (
-                <Marker
-                  onClick={(e) => {
-                    setPopup(data);
-                  }}
-                  key={index}
-                  latitude={data.lat}
-                  longitude={data.lng}
-                />
-              );
-            })}
-            {popup.lat != null && (
-              <Popup latitude={popup.lat} longitude={popup.lat}>
-                this is pop
-              </Popup>
-            )}{" "}
-          </Map>
-        </div>
-        <div className="flex flex-col justify-center md:w-1/4   lg:pr-14">
-          <label
-            htmlFor="file-upload"
-            className="border rounded-md p-4 text-center text-2xl cursor-pointer"
-          >
-            <i className="fas fa-upload fa-lg lg:mr-2"></i>Upload File to Render
-            <input
-              id="file-upload"
-              type="file"
-              style={{ display: "none" }}
-              onChange={handleFileUpload}
+      {!showData && (
+        <div>
+          <div className="flex justify-center relative top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[50%]">
+            <div className="flex flex-col justify-center ">
+              <h1 className="text-4xl font-bold">Welcome to Maps</h1>
+              <p className="text-lg">
+                Upload the file to render the map and make it interactive
+              </p>
+              <button
+                className="border rounded-md p-2 mt-6 cursor-pointer"
+                onClick={() => setShowData(true)}
+              >
+                Continue without login
+              </button>
+              <button
+                className="border rounded-md p-2 mt-6 cursor-pointer"
+                onClick={() => (window.location.href = "/login")}
+              >
+                Login
+              </button>
+            </div>
+          </div>
+          <div className="flex justify-center pt-32">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/0/0d/WorldMap.svg"
+              width={500}
+              height={500}
             />
-          </label>
+          </div>
         </div>
-      </div> */}
+      )}
+
+      {showData && (
+        <div className="flex  md:flex-row justify-center mt-10">
+          <div className="flex flex-col justify-center items-center   lg:pr-14">
+            <label
+              htmlFor="file-upload"
+              className="border rounded-md p-4 text-center text-2xl cursor-pointer"
+            >
+              <i className="fas fa-upload fa-lg lg:mr-2"></i>Upload File to
+              Render
+              <input
+                id="file-upload"
+                type="file"
+                style={{ display: "none" }}
+                onChange={handleFileUpload}
+              />
+            </label>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
