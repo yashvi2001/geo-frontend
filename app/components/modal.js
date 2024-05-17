@@ -4,6 +4,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import Map, { Source, Layer, Marker } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 const Modal = ({ isOpen, onClose, data }) => {
   const [showDatasets, setShowDatasets] = useState(true);
@@ -22,6 +23,8 @@ const Modal = ({ isOpen, onClose, data }) => {
         polygon: true,
         trash: true,
       },
+    
+       
     })
   );
 
@@ -48,11 +51,13 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleDrawCreate = (e) => {
-    setDrawnFeatures(e.features);
+    setDrawnFeatures(...drawnFeatures, e.features[0]);
   };
 
   const handleDrawDelete = (e) => {
-    setDrawnFeatures([]);
+    setDrawnFeatures(
+      drawnFeatures.filter((feature) => feature.id !== e.features[0].id)
+    );
   };
 
   const handleDrawUpdate = (e) => {
@@ -88,12 +93,11 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleClose = () => {
-    setMarkers([]);
-    setMeasurements([]);
+    // setMarkers([]);
+    // setMeasurements([]);
     setAddMarkerMode(false);
     setDrawMode(false);
     setMeasureMode(false);
-    setDrawnFeatures([]);
     onClose();
   };
 
@@ -147,14 +151,14 @@ const Modal = ({ isOpen, onClose, data }) => {
         </div>
 
         <div className="flex-grow flex flex-col items-center justify-center text-black">
-          <div style={{ height: "50vh", width: "50vw" }}>
+          <div style={{ height: "60vh", width: "60vw" }}>
             <Map
               ref={mapRef}
               mapboxAccessToken={MAPBOX_TOKEN}
-              style={{ width: "100%", height: "100%" }}
+              style={{ width: "60vw", height: "60vh" }}
               mapStyle="mapbox://styles/mapbox/streets-v9"
               onClick={handleMapClick}
-              onDblClick={(e) => e.preventDefault()}
+              onDblClick={preventDoubleClickZoom}
             >
               <Source
                 id="my-data"
@@ -197,6 +201,7 @@ const Modal = ({ isOpen, onClose, data }) => {
                     key={index}
                     latitude={marker.latitude}
                     longitude={marker.longitude}
+                    draggable={true}
                   >
                     <i className="fas fa-map-marker-alt text-2xl text-red-500"></i>
                   </Marker>
