@@ -4,6 +4,7 @@ import Map, { Source, Layer, Marker, Popup } from "react-map-gl";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "mapbox-gl/dist/mapbox-gl.css";
+import Modal from "./components/modal";
 
 export default function Home() {
   const [viewport, setViewport] = useState({
@@ -12,6 +13,16 @@ export default function Home() {
     zoom: 8,
   });
   const [newPlace, setNewPlace] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [modalData, setModalData] = useState({
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [-122.4, 37.8] },
+      },
+    ],
+  });
   const [geojson, setgeojson] = useState(null);
   const [markers, setMarkers] = useState([]);
   const [showData, setShowData] = useState(false);
@@ -147,8 +158,18 @@ export default function Home() {
     window.location.href = "/";
   };
 
+  const handleModal = (data) => {
+    setOpenModal(true);
+    setModalData(data);
+  };
+
   return (
     <main className="min-h-screen p-3">
+      <Modal
+        data={modalData}
+        isOpen={openModal}
+        onClose={() => setOpenModal(false)}
+      />
       <nav>
         <div className="flex justify-between mb-4">
           <img
@@ -237,56 +258,76 @@ export default function Home() {
               </label>
             </div>
           </div>
-          <div className="flex flex-col justify-center items-center pt-12">
-            An Example of a map and data that is uploaded
-          </div>
-          <div className="flex justify-center mt-3">
-            <div className="flex flex-col justify-center items-center"></div>
-            <div style={{ height: "50vh", width: "50vw" }}>
-              <Map
-                mapboxAccessToken={MAPBOX_TOKEN}
-                style={{ width: "100%", height: "100%" }}
-                mapStyle="mapbox://styles/mapbox/streets-v9"
-              >
-                <Source id="my-data" type="geojson" data={data}>
-                  <Layer {...layerStyle} />
-                </Source>
-              </Map>
-            </div>
-          </div>
-      {    <div className="flex justify-center mt-10">
-            <div className="flex flex-col justify-center items-center">
-              All the data will be displayed here that is uploaded 
-            </div>
-          </div>}
-          <div className="flex flex-wrap justify-center">
-            {geojson?.map((data1, index) => {
-              // console.log(data, "data");
-              return (
-                <div
-                  key={index}
-                  className="flex flex-row justify-center mt-6 ml-5 items-center flex-wrap"
-                >
-                  <div className="flex flex-col justify-center items-center border rounded-md p-4">
-                    <div style={{ height: "20vh", width: "20vw" }}>
-                      <Map
-                        mapboxAccessToken={MAPBOX_TOKEN}
-                        style={{ width: "100%", height: "100%" }}
-                        mapStyle="mapbox://styles/mapbox/streets-v9"
-                      >
-                        <Source id="my-data" type="geojson" data={data1.data}>
-                          <Layer {...layerStyle} />
-                        </Source>
-                      </Map>
-                    </div>
-                    <div className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer">
-                      View detailed data
-                    </div>
+          {!openModal && (
+            <div>
+              <div className="flex flex-col justify-center items-center pt-12">
+                An Example of a map and data that is uploaded
+              </div>
+              <div className="flex justify-center mt-3">
+                <div className="flex flex-col justify-center items-center border rounded-md p-4">
+                  <div style={{ height: "50vh", width: "50vw" }}>
+                    <Map
+                      mapboxAccessToken={MAPBOX_TOKEN}
+                      style={{ width: "100%", height: "100%" }}
+                      mapStyle="mapbox://styles/mapbox/streets-v9"
+                    >
+                      <Source id="my-data" type="geojson" data={data}>
+                        <Layer {...layerStyle} />
+                      </Source>
+                    </Map>
+                  </div>
+                  <div
+                    className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer"
+                    onClick={() => handleModal(data)}
+                  >
+                    View detailed data
                   </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+              {
+                <div className="flex justify-center mt-10">
+                  <div className="flex flex-col justify-center items-center">
+                    All the data will be displayed here that is uploaded
+                  </div>
+                </div>
+              }
+              <div className="flex flex-wrap justify-center">
+                {geojson?.map((data1, index) => {
+                  // console.log(data, "data");
+                  return (
+                    <div
+                      key={index}
+                      className="flex flex-row justify-center mt-6 ml-5 items-center flex-wrap"
+                    >
+                      <div className="flex flex-col justify-center items-center border rounded-md p-4">
+                        <div style={{ height: "20vh", width: "20vw" }}>
+                          <Map
+                            mapboxAccessToken={MAPBOX_TOKEN}
+                            style={{ width: "100%", height: "100%" }}
+                            mapStyle="mapbox://styles/mapbox/streets-v9"
+                          >
+                            <Source
+                              id="my-data"
+                              type="geojson"
+                              data={data1.data}
+                            >
+                              <Layer {...layerStyle} />
+                            </Source>
+                          </Map>
+                        </div>
+                        <div
+                          className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer"
+                          onClick={() => handleModal(data1.data)}
+                        >
+                          View detailed data
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </main>
