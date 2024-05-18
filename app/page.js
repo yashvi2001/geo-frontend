@@ -26,6 +26,7 @@ export default function Home() {
   const [geojson, setgeojson] = useState(null);
   const [showData, setShowData] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
+  const [uploadedData, setUploadedData] = useState(null);
   const [loading, setLoading] = useState(false);
   const MAPBOX_TOKEN =
     "pk.eyJ1IjoieWFzaHZpLTEyMyIsImEiOiJjbHc4MjdzNDMxbW1hMnRyem9zNWphbHl6In0.FWrh9nJuTu0oM0e20OnRaQ";
@@ -42,6 +43,7 @@ export default function Home() {
       );
 
       if (response.status === 200) {
+        setUploadedData(response.data);
         alert("File uploaded successfully");
       } else {
         alert("There was an error uploading the file");
@@ -81,7 +83,7 @@ export default function Home() {
     } catch (error) {
       alert("There was an error fetching the data ! Please try again.");
     }
-  }, [userDetails]);
+  }, [userDetails, uploadedData]);
   //get the user data from local storage and check if the user is logged in
   useEffect(() => {
     setLoading(true);
