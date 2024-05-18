@@ -100,7 +100,6 @@ export default function Home() {
   }, []);
   const handleLogout = () => {
     localStorage.removeItem("user");
-    setShowData(false);
     setUserDetails(null);
     window.location.href = "/";
   };
