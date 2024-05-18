@@ -16,7 +16,7 @@ const login = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:8000/login", data, {
+      const response = await axios.post("https://geo-backend-kxbx.onrender.com/login", data, {
         headers: {
           "Content-Type": "application/json",
         },

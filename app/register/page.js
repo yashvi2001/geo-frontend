@@ -28,7 +28,7 @@ const Register = () => {
     };
 
     try {
-      const response = await axios.post("http://localhost:8000/register", data);
+      const response = await axios.post("https://geo-backend-kxbx.onrender.com/register", data);
       if (response.status === 200) {
         alert("Registration successful!");
         localStorage.setItem("user", JSON.stringify(response.data));

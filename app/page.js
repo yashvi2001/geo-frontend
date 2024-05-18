@@ -7,12 +7,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import Modal from "./components/modal";
 
 export default function Home() {
-  const [viewport, setViewport] = useState({
-    latitude: 37.7577,
-    longitude: -122.4376,
-    zoom: 8,
-  });
-  const [newPlace, setNewPlace] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [modalData, setModalData] = useState({
     type: "FeatureCollection",
@@ -27,23 +21,26 @@ export default function Home() {
   const [showData, setShowData] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
   const [uploadedData, setUploadedData] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(false);
   const MAPBOX_TOKEN =
     "pk.eyJ1IjoieWFzaHZpLTEyMyIsImEiOiJjbHc4MjdzNDMxbW1hMnRyem9zNWphbHl6In0.FWrh9nJuTu0oM0e20OnRaQ";
 
   const handleFileUpload = async (event) => {
+    setUploading(true);
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append("file", file);
     formData.append("useremail", userDetails.useremail);
     try {
       const response = await axios.post(
-        "http://localhost:8000/upload",
+        "https://geo-backend-kxbx.onrender.com/upload",
         formData
       );
 
       if (response.status === 200) {
         setUploadedData(response.data);
+        setUploading(false);
         alert("File uploaded successfully");
       } else {
         alert("There was an error uploading the file");
@@ -74,7 +71,8 @@ export default function Home() {
     try {
       const fetchData = async () => {
         const response = await axios.get(
-          "http://localhost:8000/data?useremail=" + userDetails.useremail
+          "https://geo-backend-kxbx.onrender.com/data?useremail=" +
+            userDetails.useremail
         );
         setgeojson(response.data);
       };
@@ -204,6 +202,9 @@ export default function Home() {
                       onChange={handleFileUpload}
                     />
                   </label>
+                  {uploading && (
+                    <div className="mt-2">Uploading the file...</div>
+                  )}
                 </div>
               </div>
               {!openModal && (
