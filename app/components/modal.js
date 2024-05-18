@@ -234,6 +234,7 @@ const Modal = ({ isOpen, onClose, data }) => {
               style={{ width: "60vw", height: "60vh" }}
               mapStyle="mapbox://styles/mapbox/streets-v9"
               onClick={handleMapClick}
+              onDblClick={preventDoubleClickZoom}
               interactiveLayerIds={["point", "drawn-data"]}
             >
               <Source
