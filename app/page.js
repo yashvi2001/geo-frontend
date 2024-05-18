@@ -35,65 +35,21 @@ export default function Home() {
     const file = event.target.files[0];
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("useremail", userDetails.useremail);
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/upload",
+        formData
+      );
 
-    const response = await axios.post("http://localhost:8000/upload", formData);
-    // if (event.target.files[0].name.includes(".geojson")) {
-    //   const newFileReader = new FileReader();
-    //   newFileReader.readAsDataURL(event.target.files[0]);
-    //   newFileReader.onload = (e) => {
-    //     let data = e.target.result;
-    //     setgeojson(data);
-
-    //     //upload data to server
-
-    //     const data1 = {
-    //       file: data,
-    //       name: event.target.files[0].name,
-    //     };
-
-    //     fetch("http://localhost:8000/upload", {
-    //       method: "POST",
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //       body: JSON.stringify(data1),
-    //     })
-    //       .then((res) => res.json())
-    //       .then((data) => {
-    //         console.log(data);
-    //       })
-    //       .catch((err) => {
-    //         console.log(err);
-    //       });
-    //   };
-
-    //   newFileReader.onerror = (e) => {
-    //     console.log("Error", e.target.error);
-    //   };
-    // }
-
-    // if (event.target.files[0].name.includes(".kml")) {
-    //   const file = event.target.files[0];
-    //   const reader = new FileReader();
-    //   reader.onload = function (e) {
-    //     const parser = new DOMParser();
-    //     const xml = parser.parseFromString(e.target.result, "text/xml");
-    //     const geojson = toGeoJSON.kml(xml);
-    //     console.log(geojson);
-
-    //     setgeojson(geojson);
-    //   };
-
-    //   reader.readAsText(file);
-    // }
-    // if (event.target.files[0].name.includes(".tiff")) {
-    //   const file = event.target.files[0];
-    //   const reader = new FileReader();
-    //   reader.onload = function (e) {
-    //     const tiff = fromArrayBuffer(e.target.result);
-    //     console.log(tiff);
-    //   };
-    // }
+      if (response.status === 200) {
+        alert("File uploaded successfully");
+      } else {
+        alert("There was an error uploading the file");
+      }
+    } catch (error) {
+      alert("There was an error uploading the file");
+    }
   };
   const layerStyle = {
     id: "point",
@@ -113,9 +69,12 @@ export default function Home() {
     ],
   };
   useEffect(() => {
+    if (!userDetails) return;
     try {
       const fetchData = async () => {
-        const response = await axios.get("http://localhost:8000/data");
+        const response = await axios.get(
+          "http://localhost:8000/data?useremail=" + userDetails.useremail
+        );
         console.log(response.data, "response");
         setgeojson(response.data);
       };
@@ -124,7 +83,7 @@ export default function Home() {
     } catch (error) {
       alert("There was an error fetching the data ! Please try again.");
     }
-  }, []);
+  }, [userDetails]);
   const handleClick = (e) => {
     const data = e.lngLat;
     console.log(data);
@@ -135,13 +94,6 @@ export default function Home() {
     };
     setNewPlace(data1);
   };
-  // const geojson = {
-  //   type: 'FeatureCollection',
-  //   features: [
-  //     {type: 'Feature', geometry: {type: 'Point', coordinates: [-122.4, 37.8]}}
-  //   ]
-  // };
-
   //get the user data from local storage and check if the user is logged in
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -215,12 +167,7 @@ export default function Home() {
               <p className="text-lg">
                 Upload the file to render the map and make it interactive
               </p>
-              <button
-                className="border rounded-md p-2 mt-6 cursor-pointer"
-                onClick={() => setShowData(true)}
-              >
-                Continue without login
-              </button>
+
               <button
                 className="border rounded-md p-2 mt-6 cursor-pointer"
                 onClick={() => (window.location.href = "/login")}

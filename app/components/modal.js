@@ -23,13 +23,11 @@ const Modal = ({ isOpen, onClose, data }) => {
         polygon: true,
         trash: true,
       },
-    
-       
     })
   );
 
   useEffect(() => {
-    if (mapRef.current) {
+    if (mapRef.current && drawMode) {
       const map = mapRef.current.getMap();
       map.addControl(draw.current, "top-left");
       map.on("draw.create", handleDrawCreate);
@@ -51,7 +49,7 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleDrawCreate = (e) => {
-    setDrawnFeatures(...drawnFeatures, e.features[0]);
+    setDrawnFeatures([...drawnFeatures, e.features[0]]);
   };
 
   const handleDrawDelete = (e) => {
@@ -61,7 +59,11 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleDrawUpdate = (e) => {
-    setDrawnFeatures(e.features);
+    setDrawnFeatures(
+      drawnFeatures.map((feature) =>
+        feature.id === e.features[0].id ? e.features[0] : feature
+      )
+    );
   };
 
   const layerStyle = {
@@ -108,6 +110,27 @@ const Modal = ({ isOpen, onClose, data }) => {
     }
   };
 
+  const handleMeasure = () => {
+    setMeasureMode(true);
+    setAddMarkerMode(false);
+    setDrawMode(false);
+
+    const map = mapRef.current.getMap();
+    map.on("click", handleMeasureClick);
+  };
+
+  const handleMeasureClick = (e) => {
+    const { lng, lat } = e.lngLat;
+    setMeasurements([...measurements, { longitude: lng, latitude: lat }]);
+    if (measurements.length > 1) {
+      const distance = calculateDistance(
+        measurements[measurements.length - 2],
+        measurements[measurements.length - 1]
+      );
+      alert(`Distance: ${distance} meters`);
+    }
+  };
+
   return (
     <div
       className={`fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center ${
@@ -135,7 +158,10 @@ const Modal = ({ isOpen, onClose, data }) => {
               >
                 Draw Shape
               </button>
-              <button className="border rounded-md p-2 mt-2 md:mt-0 cursor-pointer">
+              <button
+                className="border rounded-md p-2 mt-2 md:mt-0 cursor-pointer"
+                onClick={() => handleMeasure()}
+              >
                 Measure Distance
               </button>
             </div>
@@ -171,7 +197,7 @@ const Modal = ({ isOpen, onClose, data }) => {
               >
                 <Layer {...layerStyle} />
               </Source>
-              {drawnFeatures.length > 0 && (
+              {drawnFeatures.length > 0 && showDatasets && (
                 <Source
                   id="drawn-data"
                   type="geojson"
@@ -196,6 +222,7 @@ const Modal = ({ isOpen, onClose, data }) => {
                 </Source>
               )}
               {markers.length > 0 &&
+                showDatasets &&
                 markers.map((marker, index) => (
                   <Marker
                     key={index}
@@ -204,6 +231,18 @@ const Modal = ({ isOpen, onClose, data }) => {
                     draggable={true}
                   >
                     <i className="fas fa-map-marker-alt text-2xl text-red-500"></i>
+                  </Marker>
+                ))}
+              {measurements.length > 0 &&
+                showDatasets &&
+                measurements.map((measurement, index) => (
+                  <Marker
+                    key={index}
+                    latitude={measurement.latitude}
+                    longitude={measurement.longitude}
+                    draggable={true}
+                  >
+                    <i className="fas fa-ruler text-2xl text-blue-500"></i>
                   </Marker>
                 ))}
             </Map>
