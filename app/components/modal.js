@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import Map, { Source, Layer, Marker } from "react-map-gl";
+import Map, { Source, Layer, Marker, Popup } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
@@ -14,6 +14,7 @@ const Modal = ({ isOpen, onClose, data }) => {
   const [addMarkerMode, setAddMarkerMode] = useState(false);
   const [drawMode, setDrawMode] = useState(false);
   const [drawnFeatures, setDrawnFeatures] = useState([]);
+  const [hoverInfo, setHoverInfo] = useState(null);
   const mapRef = useRef(null);
 
   const draw = useRef(
@@ -86,6 +87,7 @@ const Modal = ({ isOpen, onClose, data }) => {
     setAddMarkerMode(true);
     setDrawMode(false);
     setMeasureMode(false);
+    setMeasurements([]); // Clear previous measurements
   };
 
   const handleDraw = () => {
@@ -95,8 +97,6 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleClose = () => {
-    // setMarkers([]);
-    // setMeasurements([]);
     setAddMarkerMode(false);
     setDrawMode(false);
     setMeasureMode(false);
@@ -114,21 +114,71 @@ const Modal = ({ isOpen, onClose, data }) => {
     setMeasureMode(true);
     setAddMarkerMode(false);
     setDrawMode(false);
-
+    setMeasurements([]); // Clear previous measurements
     const map = mapRef.current.getMap();
-    map.on("click", handleMeasureClick);
+
+    map.once("click", (e) => {
+      const { lng, lat } = e.lngLat;
+      setMeasurements([{ longitude: lng, latitude: lat }]);
+    });
+
+    // Allow dragging markers after selection
+    map.on("click", (e) => {
+      if (measurements.length === 1) {
+        const { lng, lat } = e.lngLat;
+        setMeasurements([...measurements, { longitude: lng, latitude: lat }]);
+      }
+    });
+    map.on("click", () => {
+      if (measurements.length === 2) {
+        const distanceInMeters = calculateDistance(
+          measurements[0],
+          measurements[1]
+        );
+        const distanceInKilometers = (distanceInMeters / 1000).toFixed(2);
+        const distanceInMiles = (distanceInMeters / 1609.34).toFixed(2);
+        const distanceText = `Distance: ${distanceInKilometers} km (${distanceInMiles} miles)`;
+        document.getElementById("distance-display").innerText = distanceText;
+      }
+    });
   };
 
-  const handleMeasureClick = (e) => {
-    const { lng, lat } = e.lngLat;
-    setMeasurements([...measurements, { longitude: lng, latitude: lat }]);
-    if (measurements.length > 1) {
-      const distance = calculateDistance(
-        measurements[measurements.length - 2],
-        measurements[measurements.length - 1]
+  const updateMeasurement = (index, lng, lat) => {
+    const updatedMeasurements = [...measurements];
+    updatedMeasurements[index] = { longitude: lng, latitude: lat };
+    setMeasurements(updatedMeasurements);
+
+    if (updatedMeasurements.length === 2) {
+      const distanceInMeters = calculateDistance(
+        updatedMeasurements[0],
+        updatedMeasurements[1]
       );
-      alert(`Distance: ${distance} meters`);
+      const distanceInKilometers = (distanceInMeters / 1000).toFixed(2);
+      const distanceInMiles = (distanceInMeters / 1609.34).toFixed(2);
+      const distanceText = `Distance: ${distanceInKilometers} km (${distanceInMiles} miles)`;
+      document.getElementById("distance-display").innerText = distanceText;
     }
+  };
+
+  // Function to calculate distance between two points
+  const calculateDistance = (point1, point2) => {
+    const lat1 = point1.latitude;
+    const lon1 = point1.longitude;
+    const lat2 = point2.latitude;
+    const lon2 = point2.longitude;
+    const R = 6371e3; // Radius of the Earth in meters
+    const φ1 = (lat1 * Math.PI) / 180; // φ, λ in radians
+    const φ2 = (lat2 * Math.PI) / 180;
+    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    const distance = R * c; // Distance in meters
+    return distance;
   };
 
   return (
@@ -147,20 +197,26 @@ const Modal = ({ isOpen, onClose, data }) => {
           <div className="flex flex-row justify-between flex-wrap">
             <div className="p-2 text-black flex flex-col md:flex-row md:gap-4">
               <button
-                className="border rounded-md p-2 mt-2 md:mt-0 cursor-pointer"
+                className={`border rounded-md p-2 mt-2 md:mt-0 cursor-pointer ${
+                  addMarkerMode ? "bg-blue-500 text-white" : ""
+                }`}
                 onClick={handleMarker}
               >
                 Add Marker
               </button>
               <button
-                className="border rounded-md p-2 mt-2 md:mt-0 cursor-pointer"
+                className={`border rounded-md p-2 mt-2 md:mt-0 cursor-pointer  ${
+                  drawMode ? "bg-blue-500 text-white" : ""
+                }`}
                 onClick={handleDraw}
               >
                 Draw Shape
               </button>
               <button
-                className="border rounded-md p-2 mt-2 md:mt-0 cursor-pointer"
-                onClick={() => handleMeasure()}
+                className={`border rounded-md p-2 mt-2 md:mt-0 cursor-pointer ${
+                  measureMode ? "bg-blue-500 text-white" : ""
+                }`}
+                onClick={handleMeasure}
               >
                 Measure Distance
               </button>
@@ -184,7 +240,7 @@ const Modal = ({ isOpen, onClose, data }) => {
               style={{ width: "60vw", height: "60vh" }}
               mapStyle="mapbox://styles/mapbox/streets-v9"
               onClick={handleMapClick}
-              onDblClick={preventDoubleClickZoom}
+              interactiveLayerIds={["point", "drawn-data"]}
             >
               <Source
                 id="my-data"
@@ -241,12 +297,34 @@ const Modal = ({ isOpen, onClose, data }) => {
                     latitude={measurement.latitude}
                     longitude={measurement.longitude}
                     draggable={true}
+                    onMouseEnter={() => setHoverInfo(measurement)}
+                    onDragEnd={(e) => {
+                      const { lng, lat } = e.lngLat;
+                      updateMeasurement(index, lng, lat);
+                    }}
                   >
-                    <i className="fas fa-ruler text-2xl text-blue-500"></i>
+                    <i className="fas fa-map-marker-alt text-2xl text-green-500"></i>
                   </Marker>
                 ))}
+
+              {hoverInfo && (
+                <Popup
+                  longitude={hoverInfo.lng}
+                  latitude={hoverInfo.lat}
+                  closeButton={false}
+                  anchor="top"
+                  offsetTop={10}
+                >
+                  <div>
+                    <p>Longitude: {hoverInfo.lng.toFixed(5)}</p>
+                    <p>Latitude: {hoverInfo.lat.toFixed(5)}</p>
+                  </div>
+                </Popup>
+              )}
+              {/* )} */}
             </Map>
           </div>
+          <div id="distance-display" className="text-black p-2 mt-4"></div>
         </div>
       </div>
     </div>
