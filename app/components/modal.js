@@ -172,7 +172,6 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleHover = (marker) => {
-    console.log(marker);
     setHoverInfo(marker);
   };
 
@@ -326,7 +325,12 @@ const Modal = ({ isOpen, onClose, data }) => {
               {/* )} */}
             </ReactMapGL>
           </div>
-          {distance && <div>Distance: {distance.toFixed(2)} km</div>}
+          {distance && (
+            <div className="mt-2">
+              Distance of selected measurement : {distance.toFixed(2)}km (
+              {(distance * 0.621371).toFixed(2)} miles)
+            </div>
+          )}
         </div>
       </div>
     </div>
