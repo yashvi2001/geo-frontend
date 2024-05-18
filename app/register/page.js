@@ -46,42 +46,54 @@ const Register = () => {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen">
-      <div className="flex flex-col justify-center items-center">
-        <h1 className="text-4xl">Register</h1>
+    <>
+      <div
+        className="p-3 cursor-pointer"
+        onClick={() => (window.location.href = "/")}
+      >
+        <img
+          src="https://assets-global.website-files.com/660e7952369feece9a6c0e45/661376d0e8d61f1407ad6419_Asset%201.svg"
+          width={150}
+          height={150}
+        />
+      </div>
+      <div className="flex flex-col justify-center items-center md:mt-32">
         <div className="flex flex-col justify-center items-center">
-          <input
-            type="text"
-            placeholder="User Email"
-            className="border rounded-md p-4 mt-6 text-black"
-            onChange={(e) => setUserEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="border rounded-md p-4 mt-6 text-black"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            className="border rounded-md p-2 mt-6 cursor-pointer"
-            onClick={handleRegister}
-          >
-            Register
-          </button>
+          <h1 className="text-4xl">Register</h1>
+          <div className="flex flex-col justify-center items-center">
+            <input
+              type="text"
+              placeholder="User Email"
+              className="border rounded-md p-4 mt-6 text-black"
+              onChange={(e) => setUserEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              className="border rounded-md p-4 mt-6 text-black"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              className="border rounded-md p-2 mt-6 cursor-pointer"
+              onClick={handleRegister}
+            >
+              Register
+            </button>
 
-          <div className="mt-4">
-            <a href="/login" className="text-blue-500">
-              Already have an account? Login
-            </a>
+            <div className="mt-4">
+              <a href="/login" className="text-blue-500">
+                Already have an account? Login
+              </a>
+            </div>
+            <div className="mt-4">
+              <a href="/" className="text-blue-500">
+                Go back to Home Page
+              </a>
+            </div>
           </div>
-          <div className="mt-4">
-                <a href="/" className="text-blue-500">
-                Go back to Home Page 
-                </a>
-                </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

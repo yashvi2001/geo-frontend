@@ -113,11 +113,16 @@ export default function Home() {
       />
       <nav>
         <div className="flex justify-between mb-4">
-          <img
-            src="https://assets-global.website-files.com/660e7952369feece9a6c0e45/661376d0e8d61f1407ad6419_Asset%201.svg"
-            width={150}
-            height={150}
-          />
+          <div
+            className="cursor-pointer"
+            onClick={() => (window.location.href = "/")}
+          >
+            <img
+              src="https://assets-global.website-files.com/660e7952369feece9a6c0e45/661376d0e8d61f1407ad6419_Asset%201.svg"
+              width={150}
+              height={150}
+            />
+          </div>
           {userDetails?.useremail ? (
             <div className="flex flex-row justify-end">
               <div className="mr-3 mt-2 sm:hidden md:block">
