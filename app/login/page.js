@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from "react";
 import axios from "axios";
 
@@ -68,7 +68,7 @@ const Login = () => {
             </button>
             <div className="mt-4">
               <a href="/register" className="text-blue-500">
-                Don't have an account? Register
+                Don&apos;t have an account? Register
               </a>
             </div>
             <div className="mt-4">
