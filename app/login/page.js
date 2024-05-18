@@ -1,11 +1,10 @@
-"use client";
-
-import { useEffect, useState } from "react";
+"use client"
+import React, { useState } from "react";
 import axios from "axios";
 
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-const login = () => {
+const Login = () => {
   const [userEmail, setUserEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -32,6 +31,7 @@ const login = () => {
       alert("There was an error logging in! Please try again.");
     }
   };
+
   return (
     <>
       <div
@@ -83,4 +83,4 @@ const login = () => {
   );
 };
 
-export default login;
+export default Login;
