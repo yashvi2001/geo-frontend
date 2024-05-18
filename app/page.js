@@ -24,12 +24,9 @@ export default function Home() {
     ],
   });
   const [geojson, setgeojson] = useState(null);
-  const [markers, setMarkers] = useState([]);
   const [showData, setShowData] = useState(null);
   const [userDetails, setUserDetails] = useState(null);
-  const [popup, setPopup] = useState({ lat: null, lng: null });
   const [loading, setLoading] = useState(false);
-  const [maploaded, setMapLoaded] = useState(false);
   const MAPBOX_TOKEN =
     "pk.eyJ1IjoieWFzaHZpLTEyMyIsImEiOiJjbHc4MjdzNDMxbW1hMnRyem9zNWphbHl6In0.FWrh9nJuTu0oM0e20OnRaQ";
 
