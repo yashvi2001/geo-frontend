@@ -75,7 +75,6 @@ export default function Home() {
         const response = await axios.get(
           "http://localhost:8000/data?useremail=" + userDetails.useremail
         );
-        console.log(response.data, "response");
         setgeojson(response.data);
       };
 
@@ -84,16 +83,6 @@ export default function Home() {
       alert("There was an error fetching the data ! Please try again.");
     }
   }, [userDetails]);
-  const handleClick = (e) => {
-    const data = e.lngLat;
-    console.log(data);
-
-    const data1 = {
-      long: data.lng,
-      lat: data.lat,
-    };
-    setNewPlace(data1);
-  };
   //get the user data from local storage and check if the user is logged in
   useEffect(() => {
     const user = localStorage.getItem("user");
@@ -240,7 +229,6 @@ export default function Home() {
               }
               <div className="flex flex-wrap justify-center">
                 {geojson?.map((data1, index) => {
-                  // console.log(data, "data");
                   return (
                     <div
                       key={index}
