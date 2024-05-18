@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import Map, { Source, Layer, Marker, Popup } from "react-map-gl";
+import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
@@ -171,6 +171,11 @@ const Modal = ({ isOpen, onClose, data }) => {
     }
   };
 
+  const handleHover = (marker) => {
+    console.log(marker);
+    setHoverInfo(marker);
+  };
+
   return (
     <div
       className={`fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center ${
@@ -224,7 +229,7 @@ const Modal = ({ isOpen, onClose, data }) => {
 
         <div className="flex-grow flex flex-col items-center justify-center text-black">
           <div style={{ height: "60vh", width: "60vw" }}>
-            <Map
+            <ReactMapGL
               ref={mapRef}
               mapboxAccessToken={MAPBOX_TOKEN}
               style={{ width: "60vw", height: "60vh" }}
@@ -265,6 +270,10 @@ const Modal = ({ isOpen, onClose, data }) => {
                       "line-width": 2,
                     }}
                   />
+                  <div
+                    onMouseEnter={handleHover}
+                    onMouseLeave={() => setHoverInfo(null)}
+                  ></div>
                 </Source>
               )}
               {markers.length > 0 &&
@@ -276,7 +285,11 @@ const Modal = ({ isOpen, onClose, data }) => {
                     longitude={marker.longitude}
                     draggable={true}
                   >
-                    <i className="fas fa-map-marker-alt text-2xl text-red-500"></i>
+                    <i
+                      onMouseEnter={() => handleHover(marker)}
+                      onMouseLeave={() => setHoverInfo(null)}
+                      className="fas fa-map-marker-alt text-2xl text-red-500"
+                    ></i>
                   </Marker>
                 ))}
               {measurements.length > 0 &&
@@ -287,7 +300,6 @@ const Modal = ({ isOpen, onClose, data }) => {
                     latitude={measurement.latitude}
                     longitude={measurement.longitude}
                     draggable={true}
-                    onMouseEnter={() => setHoverInfo(measurement)}
                     onDragEnd={(e) => {
                       const { lng, lat } = e.lngLat;
                       updateMeasurement(index, lng, lat);
@@ -299,20 +311,20 @@ const Modal = ({ isOpen, onClose, data }) => {
 
               {hoverInfo && (
                 <Popup
-                  longitude={hoverInfo.lng}
-                  latitude={hoverInfo.lat}
+                  longitude={hoverInfo.longitude}
+                  latitude={hoverInfo.latitude}
                   closeButton={false}
                   anchor="top"
                   offsetTop={10}
                 >
                   <div>
-                    <p>Longitude: {hoverInfo.lng.toFixed(5)}</p>
-                    <p>Latitude: {hoverInfo.lat.toFixed(5)}</p>
+                    <p>Longitude: {hoverInfo.longitude.toFixed(5)}</p>
+                    <p>Latitude: {hoverInfo.latitude.toFixed(5)}</p>
                   </div>
                 </Popup>
               )}
               {/* )} */}
-            </Map>
+            </ReactMapGL>
           </div>
           {distance && <div>Distance: {distance.toFixed(2)} km</div>}
         </div>
