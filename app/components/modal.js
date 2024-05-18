@@ -15,6 +15,7 @@ const Modal = ({ isOpen, onClose, data }) => {
   const [drawMode, setDrawMode] = useState(false);
   const [drawnFeatures, setDrawnFeatures] = useState([]);
   const [hoverInfo, setHoverInfo] = useState(null);
+  const [distance, setDistance] = useState(null);
   const mapRef = useRef(null);
 
   const draw = useRef(
@@ -108,6 +109,26 @@ const Modal = ({ isOpen, onClose, data }) => {
       const { lng, lat } = e.lngLat;
       setMarkers([...markers, { longitude: lng, latitude: lat }]);
     }
+    if (measureMode) {
+      const { lng, lat } = e.lngLat;
+      const newMeasurement = {
+        latitude: lat,
+        longitude: lng,
+      };
+      //it can only measure 2 points at a time if there are more than 2 points it will remove the first point
+      if (measurements.length === 2) {
+        const updatedMeasurements = measurements.slice(1);
+        setMeasurements([...updatedMeasurements, newMeasurement]);
+        const dist = calculateDistance(updatedMeasurements[0], newMeasurement);
+        setDistance(dist);
+      } else {
+        setMeasurements([...measurements, newMeasurement]);
+        if (measurements.length === 1) {
+          const dist = calculateDistance(measurements[0], newMeasurement);
+          setDistance(dist);
+        }
+      }
+    }
   };
 
   const handleMeasure = () => {
@@ -115,70 +136,39 @@ const Modal = ({ isOpen, onClose, data }) => {
     setAddMarkerMode(false);
     setDrawMode(false);
     setMeasurements([]); // Clear previous measurements
-    const map = mapRef.current.getMap();
+  };
 
-    map.once("click", (e) => {
-      const { lng, lat } = e.lngLat;
-      setMeasurements([{ longitude: lng, latitude: lat }]);
-    });
+  const calculateDistance = (marker1, marker2) => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (marker2.latitude - marker1.latitude) * (Math.PI / 180);
+    const dLon = (marker2.longitude - marker1.longitude) * (Math.PI / 180);
+    const lat1 = marker1.latitude * (Math.PI / 180);
+    const lat2 = marker2.latitude * (Math.PI / 180);
 
-    // Allow dragging markers after selection
-    map.on("click", (e) => {
-      if (measurements.length === 1) {
-        const { lng, lat } = e.lngLat;
-        setMeasurements([...measurements, { longitude: lng, latitude: lat }]);
-      }
-    });
-    map.on("click", () => {
-      if (measurements.length === 2) {
-        const distanceInMeters = calculateDistance(
-          measurements[0],
-          measurements[1]
-        );
-        const distanceInKilometers = (distanceInMeters / 1000).toFixed(2);
-        const distanceInMiles = (distanceInMeters / 1609.34).toFixed(2);
-        const distanceText = `Distance: ${distanceInKilometers} km (${distanceInMiles} miles)`;
-        document.getElementById("distance-display").innerText = distanceText;
-      }
-    });
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in km
   };
 
   const updateMeasurement = (index, lng, lat) => {
-    const updatedMeasurements = [...measurements];
-    updatedMeasurements[index] = { longitude: lng, latitude: lat };
+    const updatedMeasurements = measurements.map((measurement, i) => {
+      if (i === index) {
+        return { latitude: lat, longitude: lng };
+      }
+      return measurement;
+    });
     setMeasurements(updatedMeasurements);
 
     if (updatedMeasurements.length === 2) {
-      const distanceInMeters = calculateDistance(
+      const dist = calculateDistance(
         updatedMeasurements[0],
         updatedMeasurements[1]
       );
-      const distanceInKilometers = (distanceInMeters / 1000).toFixed(2);
-      const distanceInMiles = (distanceInMeters / 1609.34).toFixed(2);
-      const distanceText = `Distance: ${distanceInKilometers} km (${distanceInMiles} miles)`;
-      document.getElementById("distance-display").innerText = distanceText;
+      setDistance(dist);
     }
-  };
-
-  // Function to calculate distance between two points
-  const calculateDistance = (point1, point2) => {
-    const lat1 = point1.latitude;
-    const lon1 = point1.longitude;
-    const lat2 = point2.latitude;
-    const lon2 = point2.longitude;
-    const R = 6371e3; // Radius of the Earth in meters
-    const φ1 = (lat1 * Math.PI) / 180; // φ, λ in radians
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
-    const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-    const distance = R * c; // Distance in meters
-    return distance;
   };
 
   return (
@@ -324,7 +314,7 @@ const Modal = ({ isOpen, onClose, data }) => {
               {/* )} */}
             </Map>
           </div>
-          <div id="distance-display" className="text-black p-2 mt-4"></div>
+          {distance && <div>Distance: {distance.toFixed(2)} km</div>}
         </div>
       </div>
     </div>
