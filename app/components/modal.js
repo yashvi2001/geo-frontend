@@ -1,7 +1,13 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
-import ReactMapGL, { Source, Layer, Marker, Popup } from "react-map-gl";
+import ReactMapGL, {
+  Source,
+  Layer,
+  Marker,
+  Popup,
+  NavigationControl,
+} from "react-map-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
@@ -16,7 +22,10 @@ const Modal = ({ isOpen, onClose, data }) => {
   const [drawnFeatures, setDrawnFeatures] = useState([]);
   const [hoverInfo, setHoverInfo] = useState(null);
   const [distance, setDistance] = useState(null);
+  const [draggingMarker, setDraggingMarker] = useState(null);
   const mapRef = useRef(null);
+  const deleteIconRef = useRef(null);
+  const [deleteIconPosition, setDeleteIconPosition] = useState(null);
 
   const draw = useRef(
     new MapboxDraw({
@@ -51,19 +60,41 @@ const Modal = ({ isOpen, onClose, data }) => {
   };
 
   const handleDrawCreate = (e) => {
-    setDrawnFeatures([...drawnFeatures, e.features[0]]);
+    setDrawnFeatures([...drawnFeatures, ...e.features]);
   };
 
   const handleDrawDelete = (e) => {
+    const ids = e.features.map((feature) => feature.id);
     setDrawnFeatures(
-      drawnFeatures.filter((feature) => feature.id !== e.features[0].id)
+      drawnFeatures.filter((feature) => !ids.includes(feature.id))
     );
   };
+  useEffect(() => {
+    const updateDeleteIconPosition = () => {
+      if (deleteIconRef.current && mapRef.current) {
+        const deleteIcon = deleteIconRef.current;
+        const rect = deleteIcon.getBoundingClientRect();
+        const map = mapRef.current.getMap();
+        const point = map.project([rect.left, rect.top]);
+        setDeleteIconPosition([point.x, point.y]);
+      }
+    };
+    if (mapRef.current) {
+      const map = mapRef.current.getMap();
+      map.on("move", updateDeleteIconPosition);
+      return () => {
+        map.off("move", updateDeleteIconPosition);
+      };
+    }
+  }, [mapRef]);
 
   const handleDrawUpdate = (e) => {
-    setDrawnFeatures(
-      drawnFeatures.map((feature) =>
-        feature.id === e.features[0].id ? e.features[0] : feature
+    const updatedFeatures = e.features;
+    setDrawnFeatures((prevFeatures) =>
+      prevFeatures.map(
+        (feature) =>
+          updatedFeatures.find((updated) => updated.id === feature.id) ||
+          feature
       )
     );
   };
@@ -115,7 +146,6 @@ const Modal = ({ isOpen, onClose, data }) => {
         latitude: lat,
         longitude: lng,
       };
-      //it can only measure 2 points at a time if there are more than 2 points it will remove the first point
       if (measurements.length === 2) {
         const updatedMeasurements = measurements.slice(1);
         setMeasurements([...updatedMeasurements, newMeasurement]);
@@ -171,8 +201,30 @@ const Modal = ({ isOpen, onClose, data }) => {
     }
   };
 
+  const handleMarkerDragStart = (index) => {
+    setDraggingMarker(index);
+  };
+
+  const handleMarkerDragEnd = (index, e) => {
+    const { lng, lat } = e.lngLat;
+    const updatedMarkers = markers.map((marker, i) => {
+      if (i === index) {
+        return { longitude: lng, latitude: lat };
+      }
+      return marker;
+    });
+    setMarkers(updatedMarkers);
+
+    setDraggingMarker(null);
+  };
+
   const handleHover = (marker) => {
     setHoverInfo(marker);
+  };
+  const handleDeleteMarker = (index, e) => {
+    e.stopPropagation();
+    const updatedMarkers = markers.filter((_, i) => i !== index);
+    setMarkers(updatedMarkers);
   };
 
   return (
@@ -226,7 +278,7 @@ const Modal = ({ isOpen, onClose, data }) => {
           </div>
         </div>
 
-        <div className="flex-grow flex flex-col items-center justify-center text-black">
+        <div className="flex-grow flex flex-col items-center justify-center text-black relative">
           <div style={{ height: "60vh", width: "60vw" }}>
             <ReactMapGL
               ref={mapRef}
@@ -270,10 +322,6 @@ const Modal = ({ isOpen, onClose, data }) => {
                       "line-width": 2,
                     }}
                   />
-                  <div
-                    onMouseEnter={handleHover}
-                    onMouseLeave={() => setHoverInfo(null)}
-                  ></div>
                 </Source>
               )}
               {markers.length > 0 &&
@@ -284,12 +332,23 @@ const Modal = ({ isOpen, onClose, data }) => {
                     latitude={marker.latitude}
                     longitude={marker.longitude}
                     draggable={true}
+                    onDragStart={() => handleMarkerDragStart(index)}
+                    onDragEnd={(e) => handleMarkerDragEnd(index, e)}
                   >
-                    <i
-                      onMouseEnter={() => handleHover(marker)}
-                      onMouseLeave={() => setHoverInfo(null)}
-                      className="fas fa-map-marker-alt text-2xl text-red-500"
-                    ></i>
+                    <div className="relative">
+                      <i
+                        onMouseEnter={() => handleHover(marker)}
+                        onMouseLeave={() => setHoverInfo(null)}
+                        className="fas fa-map-marker-alt text-2xl text-red-500 cursor-pointer"
+                      ></i>
+
+                      <div
+                        className="absolute bottom-5 left-4 w-4 h-4 flex items-center justify-center bg-white border border-black rounded-full cursor-pointer"
+                        onClick={(e) => handleDeleteMarker(index, e)}
+                      >
+                        <span className="text-xs">x</span>
+                      </div>
+                    </div>
                   </Marker>
                 ))}
               {measurements.length > 0 &&
@@ -323,7 +382,8 @@ const Modal = ({ isOpen, onClose, data }) => {
                   </div>
                 </Popup>
               )}
-              {/* )} */}
+
+              <NavigationControl position="top-left" />
             </ReactMapGL>
           </div>
           {distance && (
