@@ -69,3 +69,6 @@ Open your web browser and navigate to [http://localhost:3000](http://localhost:3
 *   [Tailwind CSS](https://tailwindcss.com/): For providing the UI components and styling.
 *   [Next](https://nextjs.org/): For the powerful React Framework for building user interfaces.
 *   [React Map Gl](https://visgl.github.io/react-map-gl/) : For maps rendering edit and view
+
+
+### NOTE - IN TIFF FILES AS OF NOW SHAPES AND MARKERS ARE NOT SUPPORTED IN THIS PROJECT 
