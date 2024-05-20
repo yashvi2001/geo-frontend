@@ -289,17 +289,33 @@ const Modal = ({ isOpen, onClose, data }) => {
               onDblClick={preventDoubleClickZoom}
               interactiveLayerIds={["point", "drawn-data"]}
             >
-              <Source
-                id="my-data"
-                type="geojson"
-                data={
-                  showDatasets
-                    ? data
-                    : { type: "FeatureCollection", features: [] }
-                }
-              >
-                <Layer {...layerStyle} />
-              </Source>
+              {data.type != "Buffer" ? (
+                <Source
+                  id="my-data"
+                  type="geojson"
+                  data={
+                    showDatasets
+                      ? data
+                      : { type: "FeatureCollection", features: [] }
+                  }
+                >
+                  <Layer {...layerStyle} />
+                </Source>
+              ) : (
+                <img
+                  src={`data:image/tiff;base64,${Buffer.from(data).toString(
+                    "base64"
+                  )}`}
+                  alt="Tiff"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                  }}
+                />
+              )}
               {drawnFeatures.length > 0 && showDatasets && (
                 <Source
                   id="drawn-data"

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Map, { Source, Layer, Marker, Popup } from "react-map-gl";
 import axios from "axios";
 import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -243,33 +243,72 @@ export default function Home() {
                   <div className="flex flex-wrap justify-center">
                     {geojson?.map((data1, index) => {
                       return (
-                        <div
-                          key={index}
-                          className="flex flex-row justify-center mt-6 ml-5 items-center flex-wrap"
-                        >
-                          <div className="flex flex-col justify-center items-center border rounded-md p-4">
-                            <div style={{ height: "20vh", width: "20vw" }}>
-                              <Map
-                                mapboxAccessToken={MAPBOX_TOKEN}
-                                style={{ width: "100%", height: "100%" }}
-                                mapStyle="mapbox://styles/mapbox/streets-v9"
-                              >
-                                <Source
-                                  id="my-data"
-                                  type="geojson"
-                                  data={data1.data}
-                                >
-                                  <Layer {...layerStyle} />
-                                </Source>
-                              </Map>
-                            </div>
+                        <div>
+                          {data1.data.type != "Buffer" ? (
                             <div
-                              className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer"
-                              onClick={() => handleModal(data1.data)}
+                              key={index}
+                              className="flex flex-row justify-center mt-6 ml-5 items-center flex-wrap"
                             >
-                              View detailed data
+                              <div className="flex flex-col justify-center items-center border rounded-md p-4">
+                                <div style={{ height: "20vh", width: "20vw" }}>
+                                  <Map
+                                    mapboxAccessToken={MAPBOX_TOKEN}
+                                    style={{ width: "100%", height: "100%" }}
+                                    mapStyle="mapbox://styles/mapbox/streets-v9"
+                                  >
+                                    <Source
+                                      id="my-data"
+                                      type="geojson"
+                                      data={data1.data}
+                                    >
+                                      <Layer {...layerStyle} />
+                                    </Source>
+                                  </Map>
+                                </div>
+                                <div
+                                  className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer"
+                                  onClick={() => handleModal(data1.data)}
+                                >
+                                  View detailed data
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <div
+                              key={index}
+                              className="flex flex-row justify-center mt-6 ml-5 items-center flex-wrap"
+                            >
+                              <div className="flex flex-col justify-center items-center border rounded-md p-4">
+                                <div style={{ height: "20vh", width: "20vw" }}>
+                                  <Map
+                                    mapboxAccessToken={MAPBOX_TOKEN}
+                                    style={{ width: "100%", height: "100%" }}
+                                    mapStyle="mapbox://styles/mapbox/streets-v9"
+                                  >
+                                    <img
+                                      src={`data:image/tiff;base64,${Buffer.from(
+                                        data1.data
+                                      ).toString("base64")}`}
+                                      alt="Tiff"
+                                      style={{
+                                        width: "100%",
+                                        height: "100%",
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                      }}
+                                    />
+                                  </Map>
+                                </div>
+                                <div
+                                  className="text-xl font-bold mt-2 border-2 p-2 rounded-md cursor-pointer"
+                                  onClick={() => handleModal(data1.data)}
+                                >
+                                  View detailed data
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
