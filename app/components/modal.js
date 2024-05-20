@@ -133,6 +133,7 @@ const Modal = ({ isOpen, onClose, data }) => {
     setDrawMode(false);
     setMeasureMode(false);
     setMeasurements([]);
+    setDistance(null);
     onClose();
   };
 
