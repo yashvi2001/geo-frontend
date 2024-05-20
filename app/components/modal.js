@@ -132,6 +132,7 @@ const Modal = ({ isOpen, onClose, data }) => {
     setAddMarkerMode(false);
     setDrawMode(false);
     setMeasureMode(false);
+    setMeasurements([]);
     onClose();
   };
 
