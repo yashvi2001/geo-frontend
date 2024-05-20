@@ -243,7 +243,7 @@ export default function Home() {
                   <div className="flex flex-wrap justify-center">
                     {geojson?.map((data1, index) => {
                       return (
-                        <div>
+                        <div key={index}>
                           {data1.data.type != "Buffer" ? (
                             <div
                               key={index}
